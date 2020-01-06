@@ -73,7 +73,7 @@ class SideBar(models.Model):
             result = render_to_string('config/blocks/sidebar_posts.html', context)
         elif self.display_type == self.DISPLAY_HOT:
             context = {
-                'posts': Post.host_posts()
+                'posts': Post.hot_posts()
             }
             result = render_to_string('config/blocks/sidebar_posts.html', context)
         elif self.display_type == self.DISPLAY_COMMENT:

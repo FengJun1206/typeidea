@@ -5,14 +5,14 @@ from django.db import models
 
 
 class Category(models.Model):
-    STATUS_NOMAL = 1
+    STATUS_NORMAL = 1
     STATUS_DELETE = 0
     STATUS_ITEMS = (
-        (STATUS_NOMAL, '正常'),
+        (STATUS_NORMAL, '正常'),
         (STATUS_DELETE, '删除'),
     )
     name = models.CharField(max_length=50, verbose_name='名称')
-    status = models.PositiveIntegerField(default=STATUS_NOMAL, choices=STATUS_ITEMS, verbose_name='状态')
+    status = models.PositiveIntegerField(default=STATUS_NORMAL, choices=STATUS_ITEMS, verbose_name='状态')
     is_nav = models.BooleanField(default=False, verbose_name='是否为导航')
     owner = models.ForeignKey(User, verbose_name='作者', on_delete=models.DO_NOTHING)
     created_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
@@ -23,34 +23,33 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-
     @classmethod
     def get_navs(cls):
         """获取分类信息"""
-        categoties = Category.objects.filter(status=Category.STATUS_NOMAL)
-        nav_category = []       # 导航分类
-        normal_category = []
-        for cate in categoties:
+        categories = cls.objects.filter(status=cls.STATUS_NORMAL)
+        nav_categories = []  # 导航分类
+        normal_categories = []
+        for cate in categories:
             # 一次查询，一次判断，检查 IO 操作
             if cate.is_nav:
-                nav_category.append(cate)
+                nav_categories.append(cate)
             else:
-                normal_category.append(cate)
+                normal_categories.append(cate)
         return {
-            'navs': nav_category,
-            'categories': normal_category
+            'navs': nav_categories,
+            'categories': normal_categories,
         }
 
 
 class Tag(models.Model):
-    STATUS_NOMAL = 1
+    STATUS_NORMAL = 1
     STATUS_DELETE = 0
     STATUS_ITEMS = (
-        (STATUS_NOMAL, '正常'),
+        (STATUS_NORMAL, '正常'),
         (STATUS_DELETE, '删除'),
     )
     name = models.CharField(max_length=50, verbose_name='名称')
-    status = models.PositiveIntegerField(default=STATUS_NOMAL, choices=STATUS_ITEMS, verbose_name='状态')
+    status = models.PositiveIntegerField(default=STATUS_NORMAL, choices=STATUS_ITEMS, verbose_name='状态')
     owner = models.ForeignKey(User, verbose_name='作者', on_delete=models.DO_NOTHING)
     created_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
 
@@ -62,25 +61,26 @@ class Tag(models.Model):
 
 
 class Post(models.Model):
-    STATUS_NOMAL = 1
+    STATUS_NORMAL = 1
     STATUS_DELETE = 0
     STATUS_DRAFT = 2
     STATUS_ITEMS = (
-        (STATUS_NOMAL, '正常'),
+        (STATUS_NORMAL, '正常'),
         (STATUS_DELETE, '删除'),
         (STATUS_DRAFT, '草稿'),
     )
     title = models.CharField(max_length=255, verbose_name='标题')
     desc = models.CharField(max_length=1024, verbose_name='摘要', blank=True)
     content = models.TextField(verbose_name='正文', help_text='文章内容必须为 markdown格式')
-    status = models.PositiveIntegerField(default=STATUS_NOMAL, choices=STATUS_ITEMS, verbose_name='状态')
+    content_html = models.TextField(verbose_name="正文html代码", blank=True, editable=False)
+    status = models.PositiveIntegerField(default=STATUS_NORMAL, choices=STATUS_ITEMS, verbose_name='状态')
 
     category = models.ForeignKey(Category, verbose_name='分类', on_delete=models.CASCADE)
     tag = models.ManyToManyField(Tag, verbose_name='标签')
     owner = models.ForeignKey(User, verbose_name='作者', on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
 
-    pv = models.PositiveIntegerField(default=1)     # 统计访问量
+    pv = models.PositiveIntegerField(default=1)  # 统计访问量
     uv = models.PositiveIntegerField(default=1)
 
     class Meta:
@@ -100,30 +100,26 @@ class Post(models.Model):
             post_list = []
         else:
             # selecte_related 解决 N + 1 问题
-            post_list = Post.objects.filter(status=Post.STATUS_NOMAL).select_related('category', 'owner')
+            post_list = tag.post_set.filter(status=Post.STATUS_NORMAL).select_related('owner', 'category')
         return post_list, tag
 
     @staticmethod
-    def get_by_categoty(category_id):
+    def get_by_category(category_id):
         """获取分类数据"""
         try:
-            category = Category.objects.filter(id=category_id)
+            category = Category.objects.get(id=category_id)
         except Category.DoesNotExist:
             category = None
             post_list = []
         else:
-            post_list = Post.objects.filter(status=Post.STATUS_NOMAL).select_related('category', 'owner')
+            post_list = category.post_set.filter(status=Post.STATUS_NORMAL).select_related('category', 'owner')
 
         return post_list, category
 
     @classmethod
     def latest_posts(cls):
-        """获取最新数据"""
-        queryset = cls.objects.filter(status=cls.STATUS_NOMAL)
-
-        return queryset
+        return cls.objects.filter(status=cls.STATUS_NORMAL)
 
     @classmethod
-    def host_posts(cls):
-        """获取最热文章"""
-        return cls.objects.filter(status=cls.STATUS_NOMAL).order_by('-pv')
+    def hot_posts(cls):
+        return cls.objects.filter(status=cls.STATUS_NORMAL).order_by('-pv')
