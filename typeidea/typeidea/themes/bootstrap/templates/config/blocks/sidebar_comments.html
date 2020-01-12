@@ -1,15 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% autoescape off %}
 <ul>
     {% for comment in comments %}
-        <li><a href="{% url 'post_detail' comment.target_id %}">{{ comment.target.title }}</a></li>
-        {{ comment.nickname }} : {{ comment.content }}
+    <li><a href="{{ comment.target }}">{{ comment.target.title }}</a> | {{ comment.nickname }}: {{ comment.content }}
+    </li>
     {% endfor %}
 </ul>
-</body>
-</html>
+{% endautoescape %}

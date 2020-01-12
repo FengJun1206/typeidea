@@ -24,6 +24,10 @@ from comment.views import CommentView
 from config.views import (LinkListView)
 from .custom_site import custom_site
 
+from django.contrib.sitemaps import views as sitemap_views
+from blog.rss import LatestPostFeed
+from blog.sitemap import PostSitemap
+
 
 urlpatterns = [
     re_path('^$', IndexView.as_view(), name='index'),  # 文章列表页，首页
@@ -34,6 +38,9 @@ urlpatterns = [
     re_path(r'^links/$', LinkListView.as_view(), name='links'),  # 友链
     re_path(r'^search/$', SearchView.as_view(), name='search'),     # 搜索
     re_path(r'^comment/$', CommentView.as_view(), name='comment'),  # 评论
+
+    re_path(r'^rss|feed$', LatestPostFeed(), name='rss'),
+    re_path(r'^sitemap\.xml$', sitemap_views.sitemap, {'sitemaps': {'posts': PostSitemap}}),
 
     # path('admin/', admin.site.urls),
     re_path(r'^super_admin/', admin.site.urls, name='super-admin'),

@@ -50,6 +50,12 @@ class SideBar(models.Model):
     class Meta:
         verbose_name = verbose_name_plural = '侧边栏'
 
+    def __str__(self):
+        return self.title
+
+    def _render_latest(self):
+        pass
+
     @classmethod
     def get_all(cls):
         """获取侧边栏所有数据"""
@@ -57,7 +63,6 @@ class SideBar(models.Model):
 
         return sidebar_list
 
-    @property
     def content_html(self):
         """直接渲染模板"""
         from blog.models import Post        # 避免循环引用

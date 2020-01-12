@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-
+import mistune
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.functional import cached_property
 
 
 class Category(models.Model):
@@ -25,7 +26,7 @@ class Category(models.Model):
 
     @classmethod
     def get_navs(cls):
-        """获取分类信息"""
+        """获取分类信息，是否导航"""
         categories = cls.objects.filter(status=cls.STATUS_NORMAL)
         nav_categories = []  # 导航分类
         normal_categories = []
@@ -35,6 +36,7 @@ class Category(models.Model):
                 nav_categories.append(cate)
             else:
                 normal_categories.append(cate)
+
         return {
             'navs': nav_categories,
             'categories': normal_categories,
@@ -90,6 +92,10 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
+    def save(self, *args, **kwargs):
+        self.content_html = mistune.markdown(self.content)
+        super().save(*args, **kwargs)
+
     @staticmethod
     def get_by_tag(tag_id):
         """获取标签数据"""
@@ -123,3 +129,9 @@ class Post(models.Model):
     @classmethod
     def hot_posts(cls):
         return cls.objects.filter(status=cls.STATUS_NORMAL).order_by('-pv')
+
+    # cached_property 将返回的数据绑到实例上，不用每次访问时执行 tags 函数
+    @cached_property
+    def tags(self):
+        """输出 sitemap.xml 配置"""
+        return ','.join(self.tag.values_list('name', flat=True))
