@@ -14,7 +14,9 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, re_path
+from django.conf.urls.static import static
+from django.urls import path, re_path, include
+from django.conf import settings
 
 from blog.views import (
     IndexView, CategoryView, TagView, PostDetailView,
@@ -28,6 +30,8 @@ from django.contrib.sitemaps import views as sitemap_views
 from blog.rss import LatestPostFeed
 from blog.sitemap import PostSitemap
 
+import xadmin
+from .autocomplete import CategoryAutoComplete, TagAutoComplete
 
 urlpatterns = [
     re_path('^$', IndexView.as_view(), name='index'),  # 文章列表页，首页
@@ -42,10 +46,20 @@ urlpatterns = [
     re_path(r'^rss|feed$', LatestPostFeed(), name='rss'),
     re_path(r'^sitemap\.xml$', sitemap_views.sitemap, {'sitemaps': {'posts': PostSitemap}}),
 
+    # 自动补全
+    re_path(r'^category-autocomplete/$', CategoryAutoComplete.as_view(), name='category-autocomplete'),
+    re_path(r'^tag-autocomplete/$', TagAutoComplete.as_view(), name='tag-autocomplete'),
+
     # path('admin/', admin.site.urls),
     re_path(r'^super_admin/', admin.site.urls, name='super-admin'),
-    re_path(r'^admin/', custom_site.urls, name='admin'),
-]
+    # re_path(r'^admin/', custom_site.urls, name='admin'),
+    re_path(r'^admin/', xadmin.site.urls, name='xadmin'),
+
+    re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+
 
 # from blog.views import post_list, post_detail
 # from config.views import links

@@ -35,6 +35,12 @@ INSTALLED_APPS = [
     'blog',
     'config',
     'comment',
+    'xadmin',
+    'crispy_forms',
+    'dal',
+    'dal_select2',
+    'ckeditor',
+    'ckeditor_uploader',        # 图片上传
 
     'django.contrib.admin',
     'django.contrib.auth',
@@ -134,3 +140,30 @@ STATIC_URL = '/static/'  # 配置静态资源起始路径
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'themes', THEME, 'static'),
 ]
+
+
+# Xadmin 配置
+XADMIN_TITLE = 'Typeidea 管理后台'
+XADMIN_FOOTER_TITLES = 'power by hubery_jun'
+
+
+# django-ckeditor 富文本编辑器
+CKEDITOR_CONFIGS = {
+    'default': {
+        'toobar': 'full',
+        'height': 600,
+        'width': 1000,
+        'tabSpaces': 4,
+        'extraPlugins': 'codesnippet',      # 配置代码插件
+    }
+}
+
+# 图片上传
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+CKEDITOR_UPLOAD_PATH = 'article_images'
+
+# 图片水印
+
+DEFAULT_FILE_STORAGE = 'typeidea.storage.WatermarkStorage'
